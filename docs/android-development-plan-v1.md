@@ -179,8 +179,6 @@ data class WalkEntity(
     @ColumnInfo(name = "distance_meters")
     val distanceMeters: Double,
 
-    @ColumnInfo(name = "elevation_gain_meters")
-    val elevationGainMeters: Double = 0.0,
 
     @ColumnInfo(name = "is_active")
     val isActive: Boolean = false,
@@ -218,7 +216,6 @@ data class GpsPointEntity(
     val longitude: Double,
 
     @ColumnInfo(name = "altitude")
-    val altitude: Double = 0.0,
 
     @ColumnInfo(name = "timestamp")
     val timestamp: Long,  // Unix timestamp in milliseconds
@@ -310,7 +307,6 @@ data class Walk(
     val endTime: LocalDateTime? = null,
     val totalSteps: Int,
     val distanceMeters: Double,
-    val elevationGainMeters: Double = 0.0,
     val isActive: Boolean = false,
     val gpsPoints: List<GpsPoint> = emptyList(),
     val date: LocalDate
@@ -333,7 +329,6 @@ data class Walk(
 data class GpsPoint(
     val latitude: Double,
     val longitude: Double,
-    val altitude: Double = 0.0,
     val timestamp: LocalDateTime,
     val accuracy: Float = 0f
 )
@@ -346,7 +341,6 @@ data class DailyStats(
     val date: LocalDate,
     val totalSteps: Int,
     val totalDistanceMeters: Double,
-    val totalElevationGainMeters: Double = 0.0,
     val walkCount: Int = 0
 ) {
     val totalDistanceKm: Double
@@ -377,7 +371,6 @@ interface IWalkRepository {
 
     suspend fun addGpsPoint(walkId: Long, gpsPoint: GpsPoint)
 
-    suspend fun updateWalkStats(walkId: Long, steps: Int, elevationGain: Double)
 
     suspend fun deleteAllWalks()
 }
@@ -477,13 +470,8 @@ class WalkRepository @Inject constructor(
 
         gpsPointDao.insertGpsPoint(gpsPointEntity)
 
-        // Recalculate elevation gain
         val allPoints = gpsPointDao.getGpsPointsByWalk(walkId).first()
-        val elevationGain = calculateElevationGain(allPoints.map { it.altitude })
-        updateWalkStats(walkId, 0, elevationGain)
-    }
 
-    override suspend fun updateWalkStats(walkId: Long, steps: Int, elevationGain: Double) {
         val walk = walkDao.getWalkById(walkId).first()
             ?: throw IllegalArgumentException("Walk not found")
 
@@ -495,7 +483,6 @@ class WalkRepository @Inject constructor(
         val updatedWalk = walk.copy(
             totalSteps = steps,
             distanceMeters = distance,
-            elevationGainMeters = elevationGain
         )
 
         walkDao.updateWalk(updatedWalk)
@@ -525,7 +512,6 @@ class WalkRepository @Inject constructor(
         TODO("Implement resume functionality")
     }
 
-    private fun calculateElevationGain(altitudes: List<Double>): Double {
         var gain = 0.0
         for (i in 1 until altitudes.size) {
             val diff = altitudes[i] - altitudes[i - 1]
