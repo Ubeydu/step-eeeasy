@@ -1,6 +1,6 @@
 # StepEasy - App Overview
 
-StepEasy is an offline-first mobile walking tracker that records individual walks with real-time step counting, distance, and elevation tracking. Users manually start, pause, and stop walk sessions from the Home screen, while the History screen aggregates all walks into a weekly bar chart view. The app includes a visual Paths screen showing map previews of recorded routes, and a Settings screen for configuring height-based stride estimation and sensor permissions. All data is stored locally on the device, ensuring complete privacy and offline functionality.
+StepEasy is an offline-first mobile walking tracker that records individual walks with real-time step counting and distance tracking. Users manually start, pause, and stop walk sessions from the Home screen, while the History screen aggregates all walks into a weekly bar chart view. The app includes a visual Paths screen showing map previews of recorded routes, and a Settings screen for configuring height-based stride estimation and sensor permissions. All data is stored locally on the device, ensuring complete privacy and offline functionality.
 
 ## Technical Stack
 
@@ -16,7 +16,7 @@ StepEasy is an offline-first mobile walking tracker that records individual walk
 
 * Displays **today's date** and day of the week.
 * Shows **"Active Walk"** status with a **walk duration timer** (HH:MM:SS format).
-* Tracks **one walk at a time** — shows _Steps in Current Walk_, _Distance_, and _Elevation_.
+* Tracks **one walk at a time** — shows _Steps in Current Walk_ and _Distance_.
 * User manually controls session with **Start**, **Pause**, and **Stop** buttons.
 * Includes **"View previous walks →"** link to navigate to Paths screen.
 * When a walk ends, data resets for the next session.
@@ -38,7 +38,7 @@ StepEasy is an offline-first mobile walking tracker that records individual walk
 * Displays a **list of recorded walks**, each with:
 
     * A **small map preview** of the path
-    * **Date**, **distance**, and **elevation gain**
+    * **Date** and **distance**
 
 * Lets users view their walk history visually.
 
