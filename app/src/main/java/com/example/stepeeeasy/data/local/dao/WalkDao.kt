@@ -56,6 +56,19 @@ interface WalkDao {
     fun getActiveWalk(): Flow<WalkEntity?>
 
     /**
+     * Get the currently active walk (synchronous version).
+     *
+     * This is a SUSPEND function (not Flow) that returns the current value immediately.
+     * Used when you need to get the active walk once (e.g., to stop it).
+     *
+     * Difference from getActiveWalk():
+     * - getActiveWalk() returns Flow (observes changes over time)
+     * - getActiveWalkNow() returns WalkEntity? (one-time fetch)
+     */
+    @Query("SELECT * FROM walks WHERE is_active = 1 LIMIT 1")
+    suspend fun getActiveWalkNow(): WalkEntity?
+
+    /**
      * Get all walks, ordered by start time (most recent first).
      *
      * Explanation:

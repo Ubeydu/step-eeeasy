@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-StepEeeasy (package: `com.example.stepeeeasy`) is an Android walking tracker application built with Jetpack Compose and Material Design 3. The app records walk sessions with step counting, distance tracking, and elevation monitoring. All data is stored locally for privacy and offline functionality.
+StepEeeasy (package: `com.example.stepeeeasy`) is an Android walking tracker application built with Jetpack Compose and Material Design 3. The app records walk sessions with step counting, distance tracking, and GPS path visualization. All data is stored locally for privacy and offline functionality.
 
 **Target Platform:** Android API 34+ (minSdk: 34, targetSdk: 36)
 **Language:** Kotlin
 **UI Framework:** Jetpack Compose with Material 3
-**Architecture Goal:** Clean Architecture + Repository Pattern (see docs/android-development-plan-v1.md)
+**Architecture Goal:** Clean Architecture + Repository Pattern (see docs/android-development-plan.md)
 
 ## Build Commands
 
@@ -65,12 +65,15 @@ StepEeeasy (package: `com.example.stepeeeasy`) is an Android walking tracker app
 
 ### Current State (Early Stage)
 The project is in early development with basic scaffolding. The current implementation includes:
-- **MainActivity.kt**: Entry point with adaptive navigation scaffold supporting Home, Favorites, and Profile destinations
+- **MainActivity.kt**: Entry point with adaptive navigation scaffold
+- **Bottom Navigation**: Home, History, and Paths screens
+- **Settings**: Accessed via gear icon in Home screen (not in bottom nav)
 - **Compose UI Theme**: Material 3 theming with dynamic color support (Android 12+)
-- **Navigation**: Basic bottom navigation using NavigationSuiteScaffold for adaptive layouts
+- **Database**: Room database with WalkEntity and GpsPointEntity
+- **DI**: Hilt dependency injection configured
 
 ### Planned Architecture (Clean Architecture)
-The comprehensive architecture plan is documented in `docs/android-development-plan-v1.md`. Key layers:
+The comprehensive architecture plan is documented in `docs/android-development-plan.md`. Key layers:
 
 1. **Presentation Layer** (`presentation/`):
    - Composables for Home, History, Paths, and Settings screens
@@ -97,8 +100,8 @@ The comprehensive architecture plan is documented in `docs/android-development-p
 
 ### Database Schema
 Room database with two main entities:
-- **WalkEntity**: Stores walk sessions (start_time, end_time, total_steps, distance_meters, elevation_gain_meters, is_active, date)
-- **GpsPointEntity**: Stores GPS coordinates for path visualization (walk_id FK, latitude, longitude, altitude, timestamp, accuracy)
+- **WalkEntity**: Stores walk sessions (start_time, end_time, total_steps, distance_meters, is_active, date)
+- **GpsPointEntity**: Stores GPS coordinates for path visualization (walk_id FK, latitude, longitude, timestamp, accuracy)
 
 ## Development Guidelines
 
@@ -163,7 +166,7 @@ Planned additions (see docs):
 
 ### Implementation Priority
 
-**Note:** The architecture plan in `docs/android-development-plan-v1.md` references XML layouts and Fragments, but the current codebase uses Jetpack Compose. Adapt the implementation steps to use Composables instead of Fragments/XML.
+Follow the phase-based roadmap in `docs/android-development-plan.md`. For detailed code examples, refer to `docs/technical-reference-compose.md`.
 
 #### Phase 1: Foundation & Home Screen (Week 1)
 1. Set up Hilt dependency injection
@@ -209,11 +212,11 @@ Planned additions (see docs):
 #### Phase 5: Paths Screen (Week 4)
 1. Fetch GPS points for each walk
 2. Integrate Google Maps SDK for rendering path polylines
-3. Build Paths Composable with LazyColumn for list rendering
+3. Build Paths Composable with LazyColumn (individual walk entries with date + time)
 4. Implement PathsViewModel
 5. Add lazy loading for map thumbnails
 
-**Deliverable:** Visual representation of all recorded walks with GPS paths.
+**Deliverable:** Visual representation of all recorded walks as individual entries (not grouped by day). Each shows date, time (e.g., "October 12, 2025, 16:50"), distance, and GPS path on map.
 
 ### Design Decisions
 - **Room ORM**: Type-safe, compile-time checked database access
@@ -247,6 +250,6 @@ com.example.stepeeeasy/
 ## Contact & Documentation
 
 - **Contact**: zerodawn57027@gmail.com
-- **Architecture Plan**: `docs/android-development-plan-v1.md`
-- **Feature Overview**: `docs/app-main-features-v1.md`
-- **Complexity Analysis**: `docs/feature-complexity-analysis.md`
+- **Architecture Plan**: `docs/android-development-plan.md` - Phase-based implementation roadmap
+- **Technical Reference**: `docs/technical-reference-compose.md` - Detailed code examples
+- **Wireframes**: `/Users/ubeydullahkeles/Documents/dev/Auxiliary Step Eeeasy/wireframes/` - UI mockups

@@ -33,8 +33,8 @@ This plan is designed to guide implementation in a structured way:
 StepEeeasy is an **offline-first walking tracker** for Android that records walk sessions with:
 - Real-time step counting (using built-in step counter sensor)
 - Distance tracking (GPS-based + stride calculation)
-- Path visualization (GPS coordinates on maps)
-- Historical statistics (aggregated daily/weekly data)
+- GPS path visualization on interactive maps
+- Historical statistics (aggregated daily/weekly data with charts)
 
 ### Key Principles
 
@@ -50,7 +50,9 @@ The project has been initialized with:
 - Android Studio Compose template
 - Basic MainActivity with adaptive navigation scaffold
 - Material 3 theme with dynamic color support
-- Bottom navigation structure (Home, Favorites, Profile placeholders)
+- Bottom navigation structure (Home, History, Paths)
+- Room database with WalkEntity and GpsPointEntity
+- Repository pattern with Hilt dependency injection
 
 **Next Steps:** Follow the implementation roadmap below to build out the full feature set.
 
@@ -98,11 +100,11 @@ com.example.stepeeeasy/
 │   ├── repository/        # Repository interfaces
 │   └── usecase/           # Business logic use cases
 ├── presentation/          # Presentation Layer
-│   ├── home/              # Home screen composables + ViewModel
-│   ├── settings/          # Settings screen composables + ViewModel
-│   ├── history/           # History screen composables + ViewModel
-│   ├── paths/             # Paths screen composables + ViewModel
-│   ├── navigation/        # Navigation setup
+│   ├── home/              # Home screen composables + ViewModel (includes Settings gear icon)
+│   ├── settings/          # Settings screen composables + ViewModel (accessed via Home)
+│   ├── history/           # History screen composables + ViewModel (bottom nav)
+│   ├── paths/             # Paths screen composables + ViewModel (bottom nav)
+│   ├── navigation/        # Navigation setup (NavHost, routes)
 │   └── theme/             # Compose theme (colors, typography)
 ├── service/               # Background Services
 │   ├── WalkTrackingService.kt
@@ -154,6 +156,7 @@ HomeScreen recomposes with new state
    - Define GpsPointEntity (id, walk_id, latitude, longitude, timestamp, accuracy)
    - Create WalkDao and GpsPointDao interfaces
    - Create AppDatabase class
+   - Note: GPS points enable path visualization; no elevation tracking in MVP
 
 3. **Implement WalkRepository**
    `[→ Tech Ref: Data → Repositories → WalkRepository]`
@@ -174,16 +177,21 @@ HomeScreen recomposes with new state
 
 6. **Create Home Screen Composable**
    `[→ Tech Ref: Presentation → Home Screen → HomeScreen]`
+   - Top app bar with "Active Walk" title and Settings gear icon (⚙️)
    - Display START/STOP button
    - Show timer display (HH:MM:SS format)
    - Show step count (placeholder: 0)
    - Show distance (placeholder: 0.0 km)
+   - Show current date
+   - "View previous walks →" button (navigates to History)
    - Collect ViewModel state and trigger recomposition
 
 7. **Update Navigation**
    `[→ Tech Ref: Presentation → Navigation]`
    - Configure NavHost with Home destination
-   - Update bottom navigation to route to Home
+   - Update bottom navigation (Home, History, Paths - 3 tabs only)
+   - Add Settings icon (gear) to Home screen top app bar
+   - Settings accessed via navigation, not bottom tabs
 
 **Deliverable:** Users can tap "START", see a live timer counting up, and tap "STOP". Walk data is persisted to database. No sensor integration yet.
 
@@ -238,7 +246,8 @@ SELECT * FROM walks;
 6. **Update Navigation for Settings**
    `[→ Tech Ref: Presentation → Navigation]`
    - Add Settings destination to NavHost
-   - Update bottom navigation
+   - Add gear icon button to Home screen top app bar
+   - Settings screen uses standard back arrow navigation to return
 
 **Deliverable:** Settings screen is functional. User can input height, and it persists across app restarts. "Clear Recorded Walks" deletes all walk data.
 
@@ -356,9 +365,9 @@ SELECT * FROM walks;
 6. **Build History Screen Composable**
    `[→ Tech Ref: Presentation → History Screen → HistoryScreen]`
    - Week navigation arrows (< Week >)
-   - Bar chart showing daily steps/distance
-   - List of walks for selected day (when tapping bar)
-   - Date range display
+   - Bar chart showing daily steps (primary metric)
+   - Tooltip on bar tap shows: day name, steps, and distance (e.g., "Sunday, 7,860 steps, 5.8 km")
+   - Date range display (week of October 12 - 18, 2025)
 
 7. **Create Walk List Item Composable**
    `[→ Tech Ref: Presentation → History Screen → WalkListItem]`
@@ -385,7 +394,7 @@ SELECT * FROM walks;
 
 ### Phase 5: Paths Screen (Week 4)
 
-**Goal:** Visual map representation of all recorded walks
+**Goal:** Visual map representation of all recorded walks (individual entries, not grouped by day)
 
 #### Tasks
 
@@ -398,24 +407,30 @@ SELECT * FROM walks;
 2. **Create GetAllWalksUseCase**
    `[→ Tech Ref: Domain → Use Cases → GetAllWalksUseCase]`
    - Fetch all walks with GPS points
+   - Already returns List<Walk> sorted by start time (most recent first)
 
 3. **Create PathsViewModel**
    `[→ Tech Ref: Presentation → Paths Screen → PathsViewModel]`
-   - Load all walks
-   - Handle walk selection for detail view
+   - Load all walks using GetAllWalksUseCase
+   - Expose as StateFlow<List<Walk>>
+   - Handle walk selection for full-screen map detail view
 
 4. **Build Paths Screen Composable**
    `[→ Tech Ref: Presentation → Paths Screen → PathsScreen]`
-   - LazyColumn of walk cards
-   - Each card shows: date, duration, distance, thumbnail map
-   - Tap to expand full map view
+   - LazyColumn of individual walk cards (one card per walk, NOT grouped by day)
+   - Each card shows:
+     - Date + Time: "October 12, 2025, 16:50" (format: "MMMM d, yyyy, HH:mm")
+     - Distance: "5.8 km"
+     - Map thumbnail with GPS path polyline
+   - Multiple walks on same day are listed separately with different times
+   - Tap card to expand to full-screen map view
 
 5. **Create Path Map Composable**
    `[→ Tech Ref: Presentation → Paths Screen → PathMapComposable]`
    - GoogleMap Composable integration
-   - Draw polyline from GPS points
+   - Draw polyline from GPS points (walk.gpsPoints)
    - Show start/end markers
-   - Camera auto-zoom to fit path
+   - Camera auto-zoom to fit path bounds
 
 6. **Implement Lazy Loading**
    - Only load map for visible cards
@@ -424,19 +439,20 @@ SELECT * FROM walks;
 
 7. **Update Navigation for Paths**
    `[→ Tech Ref: Presentation → Navigation]`
-   - Add Paths destination to NavHost
-   - Update bottom navigation
+   - Add Paths destination to NavHost (already in bottom nav from Phase 1)
 
-**Deliverable:** Paths screen displays a scrollable list of all recorded walks. Each walk shows a map thumbnail with the path drawn. Tapping a walk expands to full-screen map view.
+**Deliverable:** Paths screen displays a scrollable list of all recorded walks as individual entries (with date + time). Each walk shows its own map thumbnail with the specific GPS path. Tapping a walk expands to full-screen map view.
 
 **Verification:**
 ```bash
-# Complete 2-3 walks with GPS enabled
+# Complete 2-3 walks with GPS enabled (do multiple walks on same day to test)
 # Open Paths screen
-# Verify all walks appear in list
-# Verify maps show correct paths
+# Verify all walks appear as separate entries (not grouped)
+# Verify each entry shows date + time (e.g., "October 12, 2025, 16:50")
+# Verify maps show correct paths for each walk
 # Verify start/end markers are visible
 # Tap a walk, verify full-screen map appears
+# Verify multiple walks on same day are listed separately
 ```
 
 ---
