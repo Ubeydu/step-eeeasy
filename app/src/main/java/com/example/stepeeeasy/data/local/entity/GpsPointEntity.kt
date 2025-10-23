@@ -3,6 +3,7 @@ package com.example.stepeeeasy.data.local.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -14,7 +15,8 @@ import androidx.room.PrimaryKey
             childColumns = ["walk_id"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["walk_id"])]  // Index for faster queries by walk_id
 )
 data class GpsPointEntity(
     @PrimaryKey(autoGenerate = true)

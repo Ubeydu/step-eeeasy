@@ -1,6 +1,6 @@
 # Feature Complexity Analysis
 
-This document categorizes StepEasy features by implementation complexity.
+This document categorizes StepEeeasy features by implementation complexity.
 
 ---
 
@@ -17,7 +17,7 @@ This document categorizes StepEasy features by implementation complexity.
 
 ### 2. **Paths Screen - Map Previews** (Complex)
 **Why:**
-- Map library integration (Leaflet/Mapbox)
+- Map library integration (Google Maps SDK)
 - Rendering multiple small map instances efficiently
 - Storing and retrieving GPS coordinate arrays for each walk
 - Drawing path polylines on each map thumbnail
@@ -27,9 +27,9 @@ This document categorizes StepEasy features by implementation complexity.
 ### 3. **Home Screen - Real-time Walk Tracking** (Moderately Complex)
 **Why:**
 - Live step counting integration with device sensors
-- Timer that runs continuously and persists through pause/resume
+- Timer that runs continuously during active walk
 - Real-time distance calculation from steps (stride-based)
-- State management for Start/Pause/Stop with proper data persistence
+- State management for Start/Stop with proper data persistence
 - Background tracking considerations (keeping sensors active)
 - Handling sensor permissions
 
@@ -38,7 +38,7 @@ This document categorizes StepEasy features by implementation complexity.
 ## Simpler Features
 
 - **Settings Screen** - Mostly straightforward UI with local storage
-- **Tab Navigation** - Built-in Ionic functionality
+- **Tab Navigation** - Built-in Compose Navigation functionality
 - **Paths List (without maps)** - Basic list rendering
 - **Date/Time Display** - Simple formatting
 

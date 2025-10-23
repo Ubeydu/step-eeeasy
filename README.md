@@ -1,12 +1,12 @@
-# StepEasy - App Overview
+# StepEeeasy - App Overview
 
-StepEasy is an offline-first mobile walking tracker that records individual walks with real-time step counting and distance tracking. Users manually start, pause, and stop walk sessions from the Home screen, while the History screen aggregates all walks into a weekly bar chart view. The app includes a visual Paths screen showing map previews of recorded routes, and a Settings screen for configuring height-based stride estimation and sensor permissions. All data is stored locally on the device, ensuring complete privacy and offline functionality.
+StepEeeasy is an offline-first mobile walking tracker that records individual walks with real-time step counting and distance tracking. Users manually start and stop walk sessions from the Home screen, while the History screen aggregates all walks into a weekly bar chart view. The app includes a visual Paths screen showing map previews of recorded routes, and a Settings screen for configuring height-based stride estimation and sensor permissions. All data is stored locally on the device, ensuring complete privacy and offline functionality.
 
 ## Technical Stack
 
-- **Framework:** Ionic Vue with Capacitor
-- **UI Components:** Ionic UI Components
-- **Target Platform:** Optimized for Android
+- **Framework:** Android Native with Jetpack Compose
+- **UI Components:** Material Design 3
+- **Target Platform:** Android API 34+
 
 ---
 
@@ -17,7 +17,7 @@ StepEasy is an offline-first mobile walking tracker that records individual walk
 * Displays **today's date** and day of the week.
 * Shows **"Active Walk"** status with a **walk duration timer** (HH:MM:SS format).
 * Tracks **one walk at a time** — shows _Steps in Current Walk_ and _Distance_.
-* User manually controls session with **Start**, **Pause**, and **Stop** buttons.
+* User manually controls session with **Start** and **Stop** buttons.
 * Includes **"View previous walks →"** link to navigate to Paths screen.
 * When a walk ends, data resets for the next session.
 * Works **offline** and shows live updates while walking.
