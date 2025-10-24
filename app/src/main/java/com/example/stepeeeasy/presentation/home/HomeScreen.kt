@@ -140,7 +140,7 @@ private fun IdleContent(
         // View history link
         TextButton(onClick = onViewHistoryClicked) {
             Text(
-                text = "View previous walks →",
+                text = "View daily stats →",
                 style = MaterialTheme.typography.bodyLarge
             )
         }
