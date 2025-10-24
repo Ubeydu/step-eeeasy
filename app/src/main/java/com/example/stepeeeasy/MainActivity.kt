@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.example.stepeeeasy.presentation.home.HomeScreen
+import com.example.stepeeeasy.presentation.settings.SettingsScreen
 import com.example.stepeeeasy.ui.theme.StepEeeasyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -62,8 +63,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun StepEeeasyApp() {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
 
-    NavigationSuiteScaffold(
+    // Show Settings screen if requested (overlays bottom nav)
+    if (showSettings) {
+        SettingsScreen(
+            onNavigateBack = { showSettings = false }
+        )
+    } else {
+        // Show main navigation with bottom bar
+        NavigationSuiteScaffold(
         navigationSuiteItems = {
             AppDestinations.entries.forEach {
                 item(
@@ -84,7 +93,7 @@ fun StepEeeasyApp() {
         when (currentDestination) {
             AppDestinations.HOME -> {
                 HomeScreen(
-                    onNavigateToSettings = { /* TODO: Navigate to Settings */ },
+                    onNavigateToSettings = { showSettings = true },
                     onNavigateToHistory = { currentDestination = AppDestinations.HISTORY }
                 )
             }
@@ -100,6 +109,7 @@ fun StepEeeasyApp() {
                     message = "Coming in Phase 5!\n\nThis screen will show:\n• Map visualization of all walks\n• GPS path for each walk"
                 )
             }
+        }
         }
     }
 }

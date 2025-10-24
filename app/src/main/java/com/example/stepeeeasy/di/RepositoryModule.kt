@@ -1,6 +1,8 @@
 package com.example.stepeeeasy.di
 
+import com.example.stepeeeasy.data.repository.SettingsRepositoryImpl
 import com.example.stepeeeasy.data.repository.WalkRepositoryImpl
+import com.example.stepeeeasy.domain.repository.SettingsRepository
 import com.example.stepeeeasy.domain.repository.WalkRepository
 import dagger.Binds
 import dagger.Module
@@ -61,4 +63,18 @@ abstract class RepositoryModule {
     abstract fun bindWalkRepository(
         implementation: WalkRepositoryImpl
     ): WalkRepository
+
+    /**
+     * Binds SettingsRepository interface to SettingsRepositoryImpl implementation.
+     *
+     * This tells Hilt: "Whenever someone needs a SettingsRepository, give them SettingsRepositoryImpl"
+     *
+     * @param implementation The concrete implementation (SettingsRepositoryImpl)
+     * @return The interface type (SettingsRepository)
+     */
+    @Binds
+    @Singleton
+    abstract fun bindSettingsRepository(
+        implementation: SettingsRepositoryImpl
+    ): SettingsRepository
 }
