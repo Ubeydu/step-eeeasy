@@ -92,6 +92,7 @@ fun SettingsScreen(
                 // Height input section
                 HeightInputSection(
                     heightInput = uiState.heightInput,
+                    savedHeight = uiState.savedHeight,
                     errorMessage = uiState.errorMessage,
                     onHeightChanged = viewModel::onHeightChanged,
                     onSaveClicked = viewModel::onSaveHeight
@@ -140,6 +141,7 @@ fun SettingsScreen(
 @Composable
 private fun HeightInputSection(
     heightInput: String,
+    savedHeight: Int,
     errorMessage: String?,
     onHeightChanged: (String) -> Unit,
     onSaveClicked: () -> Unit
@@ -162,6 +164,9 @@ private fun HeightInputSection(
                 value = heightInput,
                 onValueChange = onHeightChanged,
                 modifier = Modifier.weight(1f),
+                placeholder = {
+                    Text(if (savedHeight > 0) savedHeight.toString() else "Enter height")
+                },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 isError = errorMessage != null
@@ -187,8 +192,13 @@ private fun HeightInputSection(
                 color = MaterialTheme.colorScheme.error
             )
         } else {
+            val displayText = if (savedHeight > 0) {
+                "Current saved value: $savedHeight cm • Used to estimate stride length automatically"
+            } else {
+                "No height saved yet • Enter your height to calculate accurate distance"
+            }
             Text(
-                text = "Current: $heightInput cm • Used to estimate stride length automatically",
+                text = displayText,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

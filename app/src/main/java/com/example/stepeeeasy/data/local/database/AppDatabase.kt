@@ -2,9 +2,7 @@ package com.example.stepeeeasy.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.example.stepeeeasy.data.local.dao.GpsPointDao
 import com.example.stepeeeasy.data.local.dao.WalkDao
-import com.example.stepeeeasy.data.local.entity.GpsPointEntity
 import com.example.stepeeeasy.data.local.entity.WalkEntity
 
 /**
@@ -16,15 +14,14 @@ import com.example.stepeeeasy.data.local.entity.WalkEntity
  * Key Concepts:
  * - @Database annotation tells Room this is a database class
  * - entities = [...] lists all the tables in the database
- * - version = 1 is the database schema version (increment when you change tables)
+ * - version = 2 is the database schema version (incremented after removing GPS tracking)
  * - exportSchema = false means we don't export the schema to a file (optional for dev)
  */
 @Database(
     entities = [
-        WalkEntity::class,
-        GpsPointEntity::class
+        WalkEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,19 +39,6 @@ abstract class AppDatabase : RoomDatabase() {
      * ```
      */
     abstract fun walkDao(): WalkDao
-
-    /**
-     * Provides access to GPS Point table operations.
-     *
-     * Room will automatically generate the implementation.
-     *
-     * Usage:
-     * ```
-     * val gpsPointDao = database.gpsPointDao()
-     * val points = gpsPointDao.getGpsPointsForWalk(walkId)
-     * ```
-     */
-    abstract fun gpsPointDao(): GpsPointDao
 
     companion object {
         /**

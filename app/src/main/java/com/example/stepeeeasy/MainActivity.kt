@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
@@ -57,22 +57,15 @@ class MainActivity : ComponentActivity() {
 /**
  * Main app composable with bottom navigation.
  *
- * Manages navigation between Home, History, and Paths screens.
+ * Manages navigation between Home, History, and Settings screens.
  */
 @PreviewScreenSizes
 @Composable
 fun StepEeeasyApp() {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
-    var showSettings by rememberSaveable { mutableStateOf(false) }
 
-    // Show Settings screen if requested (overlays bottom nav)
-    if (showSettings) {
-        SettingsScreen(
-            onNavigateBack = { showSettings = false }
-        )
-    } else {
-        // Show main navigation with bottom bar
-        NavigationSuiteScaffold(
+    // Show main navigation with bottom bar
+    NavigationSuiteScaffold(
         navigationSuiteItems = {
             AppDestinations.entries.forEach {
                 item(
@@ -93,23 +86,20 @@ fun StepEeeasyApp() {
         when (currentDestination) {
             AppDestinations.HOME -> {
                 HomeScreen(
-                    onNavigateToSettings = { showSettings = true },
                     onNavigateToHistory = { currentDestination = AppDestinations.HISTORY }
                 )
             }
             AppDestinations.HISTORY -> {
                 PlaceholderScreen(
                     title = "History",
-                    message = "Coming in Phase 4!\n\nThis screen will show:\n• Weekly bar chart of steps\n• List of previous walks"
+                    message = "Coming in Phase 4!\n\nThis screen will show:\n• Simple list of all walks\n• Walk ID, distance, steps, and date"
                 )
             }
-            AppDestinations.PATHS -> {
-                PlaceholderScreen(
-                    title = "Paths",
-                    message = "Coming in Phase 5!\n\nThis screen will show:\n• Map visualization of all walks\n• GPS path for each walk"
+            AppDestinations.SETTINGS -> {
+                SettingsScreen(
+                    onNavigateBack = { currentDestination = AppDestinations.HOME }
                 )
             }
-        }
         }
     }
 }
@@ -123,7 +113,7 @@ enum class AppDestinations(
 ) {
     HOME("Home", Icons.Default.Home),
     HISTORY("History", Icons.Default.DateRange),
-    PATHS("Paths", Icons.Default.Place),
+    SETTINGS("Settings", Icons.Default.Settings),
 }
 
 /**

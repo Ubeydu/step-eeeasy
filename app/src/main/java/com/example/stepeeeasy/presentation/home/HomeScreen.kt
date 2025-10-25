@@ -1,8 +1,6 @@
 package com.example.stepeeeasy.presentation.home
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,14 +24,12 @@ import java.time.format.DateTimeFormatter
  * - See step count and distance (Phase 3 with sensors)
  * - Tap STOP to end the walk
  *
- * @param onNavigateToSettings Callback to navigate to Settings screen
  * @param onNavigateToHistory Callback to navigate to History screen
  * @param viewModel HomeViewModel (automatically injected by Hilt)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToSettings: () -> Unit = {},
     onNavigateToHistory: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -49,15 +45,6 @@ fun HomeScreen(
                         text = "Active Walk",
                         style = MaterialTheme.typography.titleLarge
                     )
-                },
-                actions = {
-                    // Settings gear icon
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
-                        )
-                    }
                 }
             )
         }

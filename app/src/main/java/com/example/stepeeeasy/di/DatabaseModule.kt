@@ -2,7 +2,6 @@ package com.example.stepeeeasy.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.stepeeeasy.data.local.dao.GpsPointDao
 import com.example.stepeeeasy.data.local.dao.WalkDao
 import com.example.stepeeeasy.data.local.database.AppDatabase
 import dagger.Module
@@ -81,18 +80,5 @@ object DatabaseModule {
     @Provides
     fun provideWalkDao(database: AppDatabase): WalkDao {
         return database.walkDao()
-    }
-
-    /**
-     * Provides the GpsPointDao.
-     *
-     * Same concept as provideWalkDao - gets the DAO from the database.
-     *
-     * @param database The AppDatabase (provided by Hilt)
-     * @return The GpsPointDao instance
-     */
-    @Provides
-    fun provideGpsPointDao(database: AppDatabase): GpsPointDao {
-        return database.gpsPointDao()
     }
 }

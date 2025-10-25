@@ -76,7 +76,7 @@ interface WalkRepository {
      *
      * @return Flow of all walks (updates automatically when walks are added/removed)
      *
-     * Used in History and Paths screens to display walk list.
+     * Used in History screen to display walk list.
      */
     fun getAllWalks(): Flow<List<Walk>>
 
@@ -95,7 +95,6 @@ interface WalkRepository {
      * Delete all walks from the database.
      *
      * Used for the "Clear Recorded Walks" feature in Settings.
-     * GPS points will be automatically deleted due to CASCADE foreign key.
      */
     suspend fun deleteAllWalks()
 }
