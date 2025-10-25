@@ -1,9 +1,7 @@
 package com.example.stepeeeasy.data.repository
 
-import com.example.stepeeeasy.data.local.dao.GpsPointDao
 import com.example.stepeeeasy.data.local.dao.WalkDao
 import com.example.stepeeeasy.data.local.entity.WalkEntity
-import com.example.stepeeeasy.domain.model.GpsPoint
 import com.example.stepeeeasy.domain.model.Walk
 import com.example.stepeeeasy.domain.repository.WalkRepository
 import kotlinx.coroutines.flow.Flow
@@ -21,11 +19,10 @@ import javax.inject.Inject
  * This class is the TRANSLATOR between the database layer and the domain layer.
  * It converts WalkEntity (database format) to Walk (domain model) and vice versa.
  *
- * @Inject tells Hilt to automatically provide the dependencies (WalkDao, GpsPointDao)
+ * @Inject tells Hilt to automatically provide the dependencies (WalkDao)
  */
 class WalkRepositoryImpl @Inject constructor(
-    private val walkDao: WalkDao,
-    private val gpsPointDao: GpsPointDao
+    private val walkDao: WalkDao
 ) : WalkRepository {
 
     // ========================================
@@ -52,7 +49,7 @@ class WalkRepositoryImpl @Inject constructor(
         val insertedId = walkDao.insertWalk(newWalkEntity)
 
         // Return the domain model with the actual ID
-        return newWalkEntity.copy(id = insertedId).toDomainModel(emptyList())
+        return newWalkEntity.copy(id = insertedId).toDomainModel()
     }
 
     override suspend fun stopWalk(totalSteps: Int, distanceMeters: Double): Walk? {
@@ -74,12 +71,8 @@ class WalkRepositoryImpl @Inject constructor(
         // Save to database
         walkDao.updateWalk(updatedWalkEntity)
 
-        // Get GPS points for this walk (for the return value)
-        val gpsPoints = gpsPointDao.getGpsPointsForWalkOnce(updatedWalkEntity.id)
-            .map { it.toDomainModel() }
-
         // Return the updated domain model
-        return updatedWalkEntity.toDomainModel(gpsPoints)
+        return updatedWalkEntity.toDomainModel()
     }
 
     override fun getActiveWalk(): Flow<Walk?> {
@@ -87,11 +80,7 @@ class WalkRepositoryImpl @Inject constructor(
         return walkDao.getActiveWalk()
             .map { walkEntity ->
                 // If no active walk, return null
-                walkEntity?.toDomainModel(emptyList())
-
-                // Note: We don't fetch GPS points here for performance
-                // GPS points are only loaded when specifically needed (Paths screen)
-                // During an active walk, we just need the walk metadata
+                walkEntity?.toDomainModel()
             }
     }
 
@@ -99,8 +88,7 @@ class WalkRepositoryImpl @Inject constructor(
         return walkDao.getAllWalks()
             .map { walkEntities ->
                 walkEntities.map { entity ->
-                    // For list view, we don't need GPS points (performance)
-                    entity.toDomainModel(emptyList())
+                    entity.toDomainModel()
                 }
             }
     }
@@ -109,7 +97,7 @@ class WalkRepositoryImpl @Inject constructor(
         return walkDao.getWalksByDateRange(startDate, endDate)
             .map { walkEntities ->
                 walkEntities.map { entity ->
-                    entity.toDomainModel(emptyList())
+                    entity.toDomainModel()
                 }
             }
     }
@@ -132,7 +120,7 @@ class WalkRepositoryImpl @Inject constructor(
      * - Long (Unix timestamp) → LocalDateTime (nice Kotlin date)
      * - String ("2025-10-23") → LocalDate (proper date object)
      */
-    private fun WalkEntity.toDomainModel(gpsPoints: List<GpsPoint>): Walk {
+    private fun WalkEntity.toDomainModel(): Walk {
         return Walk(
             id = this.id,
             startTime = this.startTime.toLocalDateTime(),
@@ -140,7 +128,6 @@ class WalkRepositoryImpl @Inject constructor(
             totalSteps = this.totalSteps,
             distanceMeters = this.distanceMeters,
             isActive = this.isActive,
-            gpsPoints = gpsPoints,
             date = this.date.toLocalDate()
         )
     }
@@ -203,19 +190,5 @@ class WalkRepositoryImpl @Inject constructor(
      */
     private fun LocalDate.toDateString(): String {
         return this.format(DateTimeFormatter.ISO_LOCAL_DATE)
-    }
-
-    /**
-     * Convert GpsPointEntity (database) to GpsPoint (domain model).
-     *
-     * Key conversion: Long (Unix timestamp) → LocalDateTime
-     */
-    private fun com.example.stepeeeasy.data.local.entity.GpsPointEntity.toDomainModel(): GpsPoint {
-        return GpsPoint(
-            latitude = this.latitude,
-            longitude = this.longitude,
-            timestamp = this.timestamp.toLocalDateTime(),
-            accuracy = this.accuracy
-        )
     }
 }

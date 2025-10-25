@@ -11,7 +11,6 @@ data class Walk(
     val totalSteps: Int,
     val distanceMeters: Double,
     val isActive: Boolean = false,
-    val gpsPoints: List<GpsPoint> = emptyList(),
     val date: LocalDate
 ) {
     val durationSeconds: Long

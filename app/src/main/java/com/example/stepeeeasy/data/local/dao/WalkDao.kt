@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.stepeeeasy.data.local.entity.WalkEntity
-import com.example.stepeeeasy.data.local.model.DailyStatsDto
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -101,36 +100,6 @@ interface WalkDao {
      */
     @Query("SELECT * FROM walks WHERE id = :walkId")
     suspend fun getWalkById(walkId: Long): WalkEntity?
-
-    /**
-     * Get daily statistics aggregated from walks.
-     *
-     * This is for the History screen bar chart.
-     * Groups all walks by date and calculates totals for each day.
-     *
-     * @param startDate Start of date range
-     * @param endDate End of date range
-     * @return Flow of daily statistics (one entry per day with walks)
-     *
-     * Explanation:
-     * - SUM(total_steps) adds up all steps for walks on the same day
-     * - SUM(distance_meters) adds up all distances for walks on the same day
-     * - COUNT(*) counts how many walks happened that day
-     * - GROUP BY date groups the results by day
-     * - This returns DailyStatsDto objects (not WalkEntity)
-     */
-    @Query("""
-        SELECT
-            date,
-            SUM(total_steps) as totalSteps,
-            SUM(distance_meters) as totalDistanceMeters,
-            COUNT(*) as walkCount
-        FROM walks
-        WHERE date BETWEEN :startDate AND :endDate
-        GROUP BY date
-        ORDER BY date ASC
-    """)
-    fun getDailyStats(startDate: String, endDate: String): Flow<List<DailyStatsDto>>
 
     // ========================================
     // UPDATE operations

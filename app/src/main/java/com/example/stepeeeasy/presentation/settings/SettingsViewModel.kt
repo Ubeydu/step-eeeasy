@@ -43,9 +43,9 @@ class SettingsViewModel @Inject constructor(
      */
     private fun loadSettings() {
         viewModelScope.launch {
-            // Observe user height
+            // Observe saved user height from database
             settingsRepository.userHeightCm.collect { height ->
-                _uiState.update { it.copy(heightInput = height.toString()) }
+                _uiState.update { it.copy(savedHeight = height) }
             }
         }
 
@@ -90,8 +90,13 @@ class SettingsViewModel @Inject constructor(
                 // Show validation error from repository
                 _uiState.update { it.copy(errorMessage = error.message, showSuccessSnackbar = false) }
             }.onSuccess {
-                // Clear error and show success message
-                _uiState.update { it.copy(errorMessage = null, showSuccessSnackbar = true) }
+                // Clear error, clear input field, and show success message
+                // Note: savedHeight will be updated automatically by the Flow observer
+                _uiState.update { it.copy(
+                    heightInput = "",
+                    errorMessage = null,
+                    showSuccessSnackbar = true
+                ) }
             }
         }
     }
