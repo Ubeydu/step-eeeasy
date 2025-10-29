@@ -103,10 +103,10 @@ com.example.stepeeeasy/
 │   ├── home/              # Home screen composables + ViewModel (includes Settings gear icon)
 │   ├── settings/          # Settings screen composables + ViewModel (accessed via Home)
 │   ├── history/           # History screen composables + ViewModel (bottom nav)
-│   ├── paths/             # Paths screen composables + ViewModel (bottom nav)
+│   ├──         # Compose theme (colors, typography)
+├── service/        paths/             # Paths screen composables + ViewModel (bottom nav)
 │   ├── navigation/        # Navigation setup (NavHost, routes)
-│   └── theme/             # Compose theme (colors, typography)
-├── service/               # Background Services
+│   └── theme/            # Background Services
 │   ├── WalkTrackingService.kt
 │   ├── SensorManager.kt
 │   └── GpsLocationManager.kt
