@@ -1,17 +1,27 @@
 package com.example.stepeeeasy.presentation.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.stepeeeasy.util.FormatUtils
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -82,6 +92,8 @@ fun HomeScreen(
  * - Current date
  * - START button
  * - Link to view previous walks
+ *
+ * Handles runtime permission request for ACTIVITY_RECOGNITION
  */
 @Composable
 private fun IdleContent(
@@ -89,6 +101,38 @@ private fun IdleContent(
     onViewHistoryClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    var showPermissionRationale by remember { mutableStateOf(false) }
+
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permission granted, start the walk
+            onStartClicked()
+        } else {
+            // Permission denied, show rationale
+            showPermissionRationale = true
+        }
+    }
+
+    // Check if permission is already granted
+    fun checkAndRequestPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // Permission already granted, start walk
+                onStartClicked()
+            }
+            else -> {
+                // Request permission
+                permissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+        }
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -105,9 +149,9 @@ private fun IdleContent(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // START button
+        // START button (with permission check)
         Button(
-            onClick = onStartClicked,
+            onClick = { checkAndRequestPermission() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(72.dp),
@@ -129,6 +173,32 @@ private fun IdleContent(
             Text(
                 text = "View daily stats →",
                 style = MaterialTheme.typography.bodyLarge
+            )
+        }
+
+        // Permission rationale dialog
+        if (showPermissionRationale) {
+            AlertDialog(
+                onDismissRequest = { showPermissionRationale = false },
+                title = { Text("Permission Required") },
+                text = {
+                    Text("This app needs Activity Recognition permission to count your steps during walks. Please grant the permission to use this feature.")
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showPermissionRationale = false
+                            permissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+                        }
+                    ) {
+                        Text("Grant Permission")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showPermissionRationale = false }) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
     }
@@ -181,13 +251,13 @@ private fun ActiveWalkContent(
                 // Steps
                 StatCard(
                     label = "Steps",
-                    value = state.currentSteps.toString()
+                    value = FormatUtils.formatSteps(state.currentSteps)
                 )
 
                 // Distance
                 StatCard(
                     label = "Distance",
-                    value = state.formattedDistance
+                    value = FormatUtils.formatDistanceFromMeters(state.currentDistanceMeters)
                 )
             }
         }

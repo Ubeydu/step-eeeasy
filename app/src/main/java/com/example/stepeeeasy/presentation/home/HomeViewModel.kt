@@ -1,16 +1,21 @@
 package com.example.stepeeeasy.presentation.home
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stepeeeasy.domain.model.Walk
+import com.example.stepeeeasy.domain.repository.SettingsRepository
 import com.example.stepeeeasy.domain.usecase.StartWalkUseCase
 import com.example.stepeeeasy.domain.usecase.StopWalkUseCase
+import com.example.stepeeeasy.service.StepCounterManager
+import com.example.stepeeeasy.util.StrideCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
@@ -31,8 +36,13 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val startWalkUseCase: StartWalkUseCase,
-    private val stopWalkUseCase: StopWalkUseCase
+    private val stopWalkUseCase: StopWalkUseCase,
+    private val settingsRepository: SettingsRepository,
+    private val application: Application
 ) : ViewModel() {
+
+    private val stepCounterManager = StepCounterManager(application)
+    private var userHeight: Int = 170 // Default, will be loaded from settings
 
     // ========================================
     // UI State Management
@@ -60,11 +70,20 @@ class HomeViewModel @Inject constructor(
     /**
      * User tapped the START button.
      *
-     * Creates a new walk in the database and starts the timer.
+     * Creates a new walk in the database and starts the timer and step counter.
      */
     fun onStartWalkClicked() {
         viewModelScope.launch {
             try {
+                // Load user height from settings
+                userHeight = settingsRepository.userHeightCm.first()
+
+                // Check if step counter sensor is available
+                if (!stepCounterManager.isSensorAvailable()) {
+                    _uiState.value = HomeUiState.Error("Step counter sensor not available on this device")
+                    return@launch
+                }
+
                 // Call use case to start walk
                 val walk = startWalkUseCase()
 
@@ -76,12 +95,15 @@ class HomeViewModel @Inject constructor(
                     currentDistanceMeters = 0.0
                 )
 
+                // Start the step counter
+                stepCounterManager.startTracking { steps ->
+                    onStepsUpdated(steps)
+                }
+
                 // Start the timer
                 startTimer(walk.startTime)
 
             } catch (e: Exception) {
-                // Handle error (for now, just log)
-                // In Phase 3, we'll show error messages to user
                 _uiState.value = HomeUiState.Error(e.message ?: "Failed to start walk")
             }
         }
@@ -90,13 +112,16 @@ class HomeViewModel @Inject constructor(
     /**
      * User tapped the STOP button.
      *
-     * Stops the timer and saves the walk with final values.
+     * Stops the timer, step counter, and saves the walk with final values.
      */
     fun onStopWalkClicked() {
         viewModelScope.launch {
             try {
                 // Stop the timer first
                 timerJob?.cancel()
+
+                // Stop the step counter and get final steps
+                val finalSteps = stepCounterManager.stopTracking()
 
                 // Get current state
                 val currentState = _uiState.value
@@ -105,10 +130,13 @@ class HomeViewModel @Inject constructor(
                     return@launch
                 }
 
+                // Calculate final distance
+                val finalDistanceMeters = StrideCalculator.calculateDistanceMeters(finalSteps, userHeight)
+
                 // Call use case to stop walk
                 val stoppedWalk = stopWalkUseCase(
-                    totalSteps = currentState.currentSteps,
-                    distanceMeters = currentState.currentDistanceMeters
+                    totalSteps = finalSteps,
+                    distanceMeters = finalDistanceMeters
                 )
 
                 // Update UI back to idle state
@@ -117,6 +145,25 @@ class HomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Failed to stop walk")
             }
+        }
+    }
+
+    // ========================================
+    // Step Counter Callback
+    // ========================================
+
+    /**
+     * Called by StepCounterManager when step count changes.
+     * Updates UI state with new steps and calculated distance.
+     */
+    private fun onStepsUpdated(steps: Int) {
+        val currentState = _uiState.value
+        if (currentState is HomeUiState.WalkActive) {
+            val distanceMeters = StrideCalculator.calculateDistanceMeters(steps, userHeight)
+            _uiState.value = currentState.copy(
+                currentSteps = steps,
+                currentDistanceMeters = distanceMeters
+            )
         }
     }
 
@@ -159,13 +206,14 @@ class HomeViewModel @Inject constructor(
     // ========================================
 
     /**
-     * Cancel timer when ViewModel is destroyed.
+     * Cancel timer and stop step counter when ViewModel is destroyed.
      *
      * This is called when the user navigates away from Home screen.
      */
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
+        stepCounterManager.stopTracking()
     }
 }
 
@@ -216,14 +264,6 @@ sealed class HomeUiState {
                 val seconds = elapsedSeconds % 60
                 return "%02d:%02d:%02d".format(hours, minutes, seconds)
             }
-
-        /**
-         * Format distance in kilometers with 2 decimal places.
-         *
-         * Example: 4235.5 meters → "4.24 km"
-         */
-        val formattedDistance: String
-            get() = "%.2f km".format(currentDistanceMeters / 1000.0)
     }
 
     /**
