@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,8 +45,19 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     // Collect UI state from ViewModel
-    // collectAsStateWithLifecycle is lifecycle-aware - it stops collecting when app is backgrounded
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val walkStoppedEvent by viewModel.walkStoppedEvent.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Show snackbar when walk is stopped
+    LaunchedEffect(walkStoppedEvent) {
+        if (walkStoppedEvent > 0) {
+            snackbarHostState.showSnackbar(
+                message = "Walk saved! View it in History.",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -57,6 +69,9 @@ fun HomeScreen(
                     )
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
         // Content based on current state

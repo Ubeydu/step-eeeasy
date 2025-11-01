@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,14 +43,23 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Show success snackbar when save is successful
-    LaunchedEffect(uiState.showSuccessSnackbar) {
-        if (uiState.showSuccessSnackbar) {
+    // Show snackbar when height is saved (triggered by event counter)
+    LaunchedEffect(uiState.heightSavedEvent) {
+        if (uiState.heightSavedEvent > 0) {
             snackbarHostState.showSnackbar(
                 message = "Height saved successfully",
                 duration = SnackbarDuration.Short
             )
-            viewModel.onSuccessMessageShown()
+        }
+    }
+
+    // Show snackbar when walks are cleared (triggered by event counter)
+    LaunchedEffect(uiState.walksClearedEvent) {
+        if (uiState.walksClearedEvent > 0) {
+            snackbarHostState.showSnackbar(
+                message = "All walks deleted successfully",
+                duration = SnackbarDuration.Short
+            )
         }
     }
 
@@ -89,21 +99,18 @@ fun SettingsScreen(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
+                val focusManager = LocalFocusManager.current
+
                 // Height input section
                 HeightInputSection(
                     heightInput = uiState.heightInput,
                     savedHeight = uiState.savedHeight,
                     errorMessage = uiState.errorMessage,
                     onHeightChanged = viewModel::onHeightChanged,
-                    onSaveClicked = viewModel::onSaveHeight
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Activity Recognition toggle
-                ActivityRecognitionSection(
-                    enabled = uiState.activityRecognitionEnabled,
-                    onToggled = viewModel::onActivityRecognitionToggled
+                    onSaveClicked = {
+                        focusManager.clearFocus()  // Dismiss keyboard
+                        viewModel.onSaveHeight()
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -240,14 +247,6 @@ private fun AppInfoFooter() {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.Start
     ) {
-        Text(
-            text = "For accurate tracking, disable battery optimization",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         Text(
             text = "zerodawn57027@gmail.com",
             style = MaterialTheme.typography.bodySmall,

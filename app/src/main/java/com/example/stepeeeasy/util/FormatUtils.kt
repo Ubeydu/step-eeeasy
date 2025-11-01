@@ -8,18 +8,40 @@ package com.example.stepeeeasy.util
 object FormatUtils {
 
     /**
-     * Formats distance in kilometers for display.
-     * Rounds to 1 decimal place for clean UI presentation.
+     * Formats distance for display with appropriate units.
      *
-     * @param distanceKm Distance in kilometers (precise value from calculations)
-     * @return Formatted string with "km" suffix
+     * @param distanceKm Distance in kilometers
+     * @return Formatted string with appropriate unit
      *
      * Examples:
-     * - 7.525 km → "7.5 km"
-     * - 0.123 km → "0.1 km"
-     * - 10.0 km → "10.0 km"
+     * - 0.024 km (24m) → "24 m"
+     * - 1.055 km (1055m) → "1 km 55 m"
+     * - 2.0 km (2000m) → "2 km"
+     * - 12.5 km → "12.5 km"
      */
     fun formatDistance(distanceKm: Double): String {
+        // Convert to meters for easier calculation
+        val meters = (distanceKm * 1000).toInt()
+
+        // Less than 1 km: show in meters
+        if (meters < 1000) {
+            return "$meters m"
+        }
+
+        // Less than 10 km: show km and remaining meters
+        if (meters < 10000) {
+            val km = meters / 1000
+            val remainingMeters = meters % 1000
+
+            // If no remaining meters, just show km
+            if (remainingMeters == 0) {
+                return "$km km"
+            }
+            // Otherwise show both
+            return "$km km $remainingMeters m"
+        }
+
+        // 10 km or more: show km with decimal
         return "%.1f km".format(distanceKm)
     }
 
