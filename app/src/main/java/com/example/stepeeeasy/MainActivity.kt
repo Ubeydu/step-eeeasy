@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.example.stepeeeasy.presentation.home.HomeScreen
+import com.example.stepeeeasy.presentation.history.HistoryScreen
 import com.example.stepeeeasy.presentation.settings.SettingsScreen
 import com.example.stepeeeasy.ui.theme.StepEeeasyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -90,10 +91,7 @@ fun StepEeeasyApp() {
                 )
             }
             AppDestinations.HISTORY -> {
-                PlaceholderScreen(
-                    title = "History",
-                    message = "Coming in Phase 4!\n\nThis screen will show:\n• Simple list of all walks\n• Walk ID, distance, steps, and date"
-                )
+                HistoryScreen()
             }
             AppDestinations.SETTINGS -> {
                 SettingsScreen(

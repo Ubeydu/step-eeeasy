@@ -88,14 +88,13 @@ class SettingsViewModel @Inject constructor(
 
             result.onFailure { error ->
                 // Show validation error from repository
-                _uiState.update { it.copy(errorMessage = error.message, showSuccessSnackbar = false) }
+                _uiState.update { it.copy(errorMessage = error.message) }
             }.onSuccess {
-                // Clear error, clear input field, and show success message
-                // Note: savedHeight will be updated automatically by the Flow observer
+                // Clear error, clear input field, and trigger snackbar
                 _uiState.update { it.copy(
                     heightInput = "",
                     errorMessage = null,
-                    showSuccessSnackbar = true
+                    heightSavedEvent = it.heightSavedEvent + 1
                 ) }
             }
         }
@@ -136,15 +135,10 @@ class SettingsViewModel @Inject constructor(
     fun onConfirmClearWalks() {
         viewModelScope.launch {
             clearAllWalksUseCase()
-            _uiState.update { it.copy(showClearDialog = false) }
+            _uiState.update { it.copy(
+                showClearDialog = false,
+                walksClearedEvent = it.walksClearedEvent + 1
+            ) }
         }
-    }
-
-    /**
-     * Reset success snackbar flag after it has been shown.
-     * Called by UI after displaying the snackbar.
-     */
-    fun onSuccessMessageShown() {
-        _uiState.update { it.copy(showSuccessSnackbar = false) }
     }
 }

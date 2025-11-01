@@ -11,7 +11,8 @@ package com.example.stepeeeasy.presentation.settings
  * @param activityRecognitionEnabled Current state of Activity Recognition toggle
  * @param errorMessage Error message to show (e.g., "Height must be between 50-250 cm"), null if no error
  * @param showClearDialog Whether to show "Clear Recorded Walks" confirmation dialog
- * @param showSuccessSnackbar Whether to show success snackbar after saving height
+ * @param heightSavedEvent Counter that increments each time height is saved (triggers snackbar)
+ * @param walksClearedEvent Counter that increments each time walks are cleared (triggers snackbar)
  */
 data class SettingsUiState(
     val heightInput: String = "",
@@ -19,5 +20,6 @@ data class SettingsUiState(
     val activityRecognitionEnabled: Boolean = false,
     val errorMessage: String? = null,
     val showClearDialog: Boolean = false,
-    val showSuccessSnackbar: Boolean = false
+    val heightSavedEvent: Int = 0,
+    val walksClearedEvent: Int = 0
 )

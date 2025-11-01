@@ -58,6 +58,13 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     /**
+     * Event counter for walk stopped snackbar.
+     * Increments each time a walk is successfully stopped.
+     */
+    private val _walkStoppedEvent = MutableStateFlow(0)
+    val walkStoppedEvent: StateFlow<Int> = _walkStoppedEvent.asStateFlow()
+
+    /**
      * Timer job for updating elapsed time.
      * We keep a reference so we can cancel it when stopping the walk.
      */
@@ -141,6 +148,9 @@ class HomeViewModel @Inject constructor(
 
                 // Update UI back to idle state
                 _uiState.value = HomeUiState.Idle
+
+                // Trigger snackbar
+                _walkStoppedEvent.value = _walkStoppedEvent.value + 1
 
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Failed to stop walk")
