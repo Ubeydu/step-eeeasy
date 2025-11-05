@@ -15,19 +15,10 @@ import javax.inject.Inject
 
 /**
  * Implementation of WalkRepository.
- *
- * This class is the TRANSLATOR between the database layer and the domain layer.
- * It converts WalkEntity (database format) to Walk (domain model) and vice versa.
- *
- * @Inject tells Hilt to automatically provide the dependencies (WalkDao)
  */
 class WalkRepositoryImpl @Inject constructor(
     private val walkDao: WalkDao
 ) : WalkRepository {
-
-    // ========================================
-    // PUBLIC API (implements WalkRepository)
-    // ========================================
 
     override suspend fun startWalk(): Walk {
         // Get current time
@@ -106,20 +97,6 @@ class WalkRepositoryImpl @Inject constructor(
         walkDao.deleteAllWalks()
     }
 
-    // ========================================
-    // PRIVATE HELPER FUNCTIONS (Mappers)
-    // ========================================
-
-    /**
-     * Convert WalkEntity (database) to Walk (domain model).
-     *
-     * This is called a MAPPER function.
-     * It translates between different representations of the same data.
-     *
-     * Key conversions:
-     * - Long (Unix timestamp) → LocalDateTime (nice Kotlin date)
-     * - String ("2025-10-23") → LocalDate (proper date object)
-     */
     private fun WalkEntity.toDomainModel(): Walk {
         return Walk(
             id = this.id,
@@ -132,11 +109,6 @@ class WalkRepositoryImpl @Inject constructor(
         )
     }
 
-    /**
-     * Convert Walk (domain model) to WalkEntity (database).
-     *
-     * Used when we need to update a walk in the database.
-     */
     private fun Walk.toEntity(): WalkEntity {
         return WalkEntity(
             id = this.id,
@@ -149,15 +121,6 @@ class WalkRepositoryImpl @Inject constructor(
         )
     }
 
-    // ========================================
-    // EXTENSION FUNCTIONS (Type Converters)
-    // ========================================
-
-    /**
-     * Convert Unix timestamp (Long) to LocalDateTime.
-     *
-     * Example: 1729692000000 → 2025-10-23T14:00:00
-     */
     private fun Long.toLocalDateTime(): LocalDateTime {
         return LocalDateTime.ofInstant(
             Instant.ofEpochMilli(this),
@@ -165,29 +128,14 @@ class WalkRepositoryImpl @Inject constructor(
         )
     }
 
-    /**
-     * Convert LocalDateTime to Unix timestamp (Long).
-     *
-     * Example: 2025-10-23T14:00:00 → 1729692000000
-     */
     private fun LocalDateTime.toEpochMillis(): Long {
         return this.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     }
 
-    /**
-     * Convert String to LocalDate.
-     *
-     * Example: "2025-10-23" → LocalDate(2025, 10, 23)
-     */
     private fun String.toLocalDate(): LocalDate {
         return LocalDate.parse(this, DateTimeFormatter.ISO_LOCAL_DATE)
     }
 
-    /**
-     * Convert LocalDate to String.
-     *
-     * Example: LocalDate(2025, 10, 23) → "2025-10-23"
-     */
     private fun LocalDate.toDateString(): String {
         return this.format(DateTimeFormatter.ISO_LOCAL_DATE)
     }

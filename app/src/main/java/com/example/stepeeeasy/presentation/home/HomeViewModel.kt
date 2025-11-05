@@ -44,35 +44,13 @@ class HomeViewModel @Inject constructor(
     private val stepCounterManager = StepCounterManager(application)
     private var userHeight: Int = 170 // Default, will be loaded from settings
 
-    // ========================================
-    // UI State Management
-    // ========================================
-
-    /**
-     * UI State holder.
-     *
-     * This is the single source of truth for the Home screen UI.
-     * When this changes, the Composable will automatically recompose.
-     */
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Idle)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    /**
-     * Event counter for walk stopped snackbar.
-     * Increments each time a walk is successfully stopped.
-     */
     private val _walkStoppedEvent = MutableStateFlow(0)
     val walkStoppedEvent: StateFlow<Int> = _walkStoppedEvent.asStateFlow()
 
-    /**
-     * Timer job for updating elapsed time.
-     * We keep a reference so we can cancel it when stopping the walk.
-     */
     private var timerJob: Job? = null
-
-    // ========================================
-    // User Actions (called from UI)
-    // ========================================
 
     /**
      * User tapped the START button.
@@ -158,14 +136,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // ========================================
-    // Step Counter Callback
-    // ========================================
-
-    /**
-     * Called by StepCounterManager when step count changes.
-     * Updates UI state with new steps and calculated distance.
-     */
     private fun onStepsUpdated(steps: Int) {
         val currentState = _uiState.value
         if (currentState is HomeUiState.WalkActive) {
@@ -177,21 +147,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // ========================================
-    // Timer Logic
-    // ========================================
-
-    /**
-     * Start a timer that updates elapsed seconds every second.
-     *
-     * This creates a coroutine that runs in a loop:
-     * 1. Calculate elapsed time since walk started
-     * 2. Update UI state with new elapsed seconds
-     * 3. Wait 1 second
-     * 4. Repeat
-     *
-     * @param startTime When the walk started (from database)
-     */
     private fun startTimer(startTime: LocalDateTime) {
         timerJob = viewModelScope.launch {
             while (true) {
@@ -227,46 +182,15 @@ class HomeViewModel @Inject constructor(
     }
 }
 
-/**
- * UI State sealed class.
- *
- * Represents all possible states the Home screen can be in.
- * Sealed class means the compiler knows all possible states.
- *
- * Why sealed class?
- * - Type-safe state management
- * - Compiler ensures you handle all cases (in when expressions)
- * - Clear definition of what data is available in each state
- */
 sealed class HomeUiState {
-    /**
-     * Idle state: No active walk.
-     * Shows START button, no timer.
-     */
     data object Idle : HomeUiState()
 
-    /**
-     * Active walk state: Walk is in progress.
-     * Shows STOP button, running timer, live stats.
-     *
-     * @param walk The active walk from database
-     * @param elapsedSeconds Seconds since walk started (for timer display)
-     * @param currentSteps Current step count (from sensor - Phase 3)
-     * @param currentDistanceMeters Current distance in meters (calculated - Phase 3)
-     */
     data class WalkActive(
         val walk: Walk,
         val elapsedSeconds: Long,
         val currentSteps: Int,
         val currentDistanceMeters: Double
     ) : HomeUiState() {
-        /**
-         * Format elapsed time as HH:MM:SS.
-         *
-         * Examples:
-         * - 65 seconds → "00:01:05"
-         * - 3661 seconds → "01:01:01"
-         */
         val formattedTime: String
             get() {
                 val hours = elapsedSeconds / 3600
@@ -276,9 +200,5 @@ sealed class HomeUiState {
             }
     }
 
-    /**
-     * Error state: Something went wrong.
-     * Shows error message to user.
-     */
     data class Error(val message: String) : HomeUiState()
 }

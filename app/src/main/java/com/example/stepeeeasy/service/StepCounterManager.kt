@@ -8,14 +8,8 @@ import android.hardware.SensorManager
 import android.util.Log
 
 /**
-// * Manages step counting using the device's built-in step counter sensor.
-// *
-// * Key concepts:
-// * - Calculates delta: current_steps - baseline_steps
-// * - Notifies callback with step updates
-// * - Uses Sensor.TYPE_STEP_COUNTER (cumulative steps since last reboot)
-// * - Records baseline when walk starts
-// */
+ * Manages step counting using device's step counter sensor.
+ */
 class StepCounterManager(context: Context) : SensorEventListener {
 
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -31,20 +25,10 @@ class StepCounterManager(context: Context) : SensorEventListener {
         private const val TAG = "StepCounterManager"
     }
 
-    /**
-     * Checks if the device has a step counter sensor.
-     *
-     * @return true if sensor is available, false otherwise
-     */
     fun isSensorAvailable(): Boolean {
         return stepCounterSensor != null
     }
 
-    /**
-     * Starts tracking steps. Records the current step count as baseline.
-     *
-     * @param onStepCountChanged Callback invoked when step count changes
-     */
     fun startTracking(onStepCountChanged: (Int) -> Unit) {
         if (stepCounterSensor == null) {
             Log.e(TAG, "Step counter sensor not available on this device")
@@ -66,11 +50,6 @@ class StepCounterManager(context: Context) : SensorEventListener {
         Log.d(TAG, "Step tracking started")
     }
 
-    /**
-     * Stops tracking steps and unregisters the sensor listener.
-     *
-     * @return Final step count for the walk
-     */
     fun stopTracking(): Int {
         if (isTracking) {
             sensorManager.unregisterListener(this)
@@ -81,9 +60,6 @@ class StepCounterManager(context: Context) : SensorEventListener {
         return currentSteps
     }
 
-    /**
-     * Called when sensor values change. Calculates step delta and notifies callback.
-     */
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER && isTracking) {
             val totalStepsSinceReboot = event.values[0].toInt()
@@ -102,18 +78,10 @@ class StepCounterManager(context: Context) : SensorEventListener {
         }
     }
 
-    /**
-     * Called when sensor accuracy changes. Not used for step counter.
-     */
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // Not needed for step counter
     }
 
-    /**
-     * Gets the current step count without stopping tracking.
-     *
-     * @return Current step count since walk started
-     */
     fun getCurrentSteps(): Int {
         return currentSteps
     }
